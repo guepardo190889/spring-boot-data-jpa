@@ -34,7 +34,6 @@ public class Cliente implements Serializable {
 	private Long id;
 
 	@NotEmpty
-	@Size(min = 2, max = 64)
 	private String nombre;
 
 	@NotEmpty
