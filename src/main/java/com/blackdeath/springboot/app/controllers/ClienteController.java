@@ -11,6 +11,8 @@ import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.SessionAttributes;
+import org.springframework.web.bind.support.SessionStatus;
 
 import com.blackdeath.springboot.app.models.dao.IClienteDao;
 import com.blackdeath.springboot.app.models.entity.Cliente;
@@ -19,6 +21,7 @@ import com.blackdeath.springboot.app.models.entity.Cliente;
  * @author blackdeath
  *
  */
+@SessionAttributes("cliente")
 @Controller
 public class ClienteController {
 
@@ -43,7 +46,7 @@ public class ClienteController {
 	}
 
 	@RequestMapping(value = "/form", method = RequestMethod.POST)
-	public String guardar(@Valid Cliente cliente, BindingResult result, Model model) {
+	public String guardar(@Valid Cliente cliente, BindingResult result, Model model, SessionStatus status) {
 
 		if (result.hasErrors()) {
 			model.addAttribute("titulo", "Alta de Cliente");
@@ -51,6 +54,7 @@ public class ClienteController {
 		}
 
 		clienteDao.save(cliente);
+		status.setComplete();
 
 		return "redirect:listar";
 	}
