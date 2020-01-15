@@ -5,12 +5,13 @@
 	<header th:replace="layout/layout :: header"></header>
 
 	<div class="container py-4">
-		<div class="card bg-dark text-white">
+		<div class="card bg-ligth">
 			<div th:text="${titulo}" class="card-header"></div>
 			<div class="card-body">
-			
+
 				<div th:object="${cliente}" th:remove="tag">
-					<ul th:if="${#fields.hasErrors('*')}" class="alert alert-danger" role="alert">
+					<ul th:if="${#fields.hasErrors('*')}" class="alert alert-danger"
+						role="alert">
 						<li th:each="error: ${#fields.errors('*')}" th:text="${error}"></li>
 					</ul>
 				</div>
@@ -58,7 +59,7 @@
 
 					<div class="form-group row">
 						<div class="col-sm-6">
-							<input type="submit" value="Guardar" class="btn btn-secondary" />
+							<input type="submit" value="Guardar" class="btn btn-primary" />
 						</div>
 					</div>
 				</form>
