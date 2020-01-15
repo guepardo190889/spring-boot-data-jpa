@@ -1,6 +1,6 @@
 package com.blackdeath.springboot.app.models.dao;
 
-import org.springframework.data.repository.CrudRepository;
+import org.springframework.data.repository.PagingAndSortingRepository;
 
 import com.blackdeath.springboot.app.models.entity.Cliente;
 
@@ -8,6 +8,6 @@ import com.blackdeath.springboot.app.models.entity.Cliente;
  * @author blackdeath
  *
  */
-public interface IClienteDao extends CrudRepository<Cliente, Long> {
+public interface IClienteDao extends PagingAndSortingRepository<Cliente, Long> {
 
 }
