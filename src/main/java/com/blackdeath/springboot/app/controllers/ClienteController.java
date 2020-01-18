@@ -1,5 +1,9 @@
 package com.blackdeath.springboot.app.controllers;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Map;
 
 import javax.validation.Valid;
@@ -17,6 +21,7 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.SessionAttributes;
 import org.springframework.web.bind.support.SessionStatus;
+import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import com.blackdeath.springboot.app.models.entity.Cliente;
@@ -58,12 +63,30 @@ public class ClienteController {
 	}
 
 	@RequestMapping(value = "/form", method = RequestMethod.POST)
-	public String guardar(@Valid Cliente cliente, BindingResult result, Model model, SessionStatus status,
-			RedirectAttributes flash) {
+	public String guardar(@Valid Cliente cliente, @RequestParam("file") MultipartFile foto, BindingResult result,
+			Model model, SessionStatus status, RedirectAttributes flash) {
 
 		if (result.hasErrors()) {
 			model.addAttribute("titulo", "Alta de Cliente");
 			return "form";
+		}
+
+		if (!foto.isEmpty()) {
+			try {
+				Path rutaUploadsRelativa = Paths.get("src//main//resources//static//uploads");
+				String rutaUploadsAbsoluta = rutaUploadsRelativa.toFile().getAbsolutePath();
+
+				byte[] bytesFoto = foto.getBytes();
+
+				Path rutaFoto = Paths.get(rutaUploadsAbsoluta + "//" + foto.getOriginalFilename());
+				Files.write(rutaFoto, bytesFoto);
+
+				flash.addFlashAttribute("info", "Foto '" + foto.getOriginalFilename() + "' subida con éxito");
+
+				cliente.setFoto(foto.getOriginalFilename());
+			} catch (IOException ioe) {
+				ioe.printStackTrace();
+			}
 		}
 
 		String mensajeFlash = (cliente.getId() != null) ? "Cliente editado con éxito" : "Cliente guardado con éxito";
