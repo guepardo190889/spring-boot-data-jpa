@@ -50,6 +50,10 @@ public class Cliente implements Serializable {
 
 	private String foto;
 
+	public String getNombreConApellido() {
+		return getNombre() + " " + getApellido();
+	}
+
 	public Long getId() {
 		return id;
 	}
