@@ -9,6 +9,7 @@ import java.util.Map;
 import javax.validation.Valid;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -39,6 +40,9 @@ public class ClienteController {
 
 	@Autowired
 	private IClienteService clienteService;
+
+	@Value("${paths.clientes.fotos}")
+	private String rutaFotosCliente;
 
 	@RequestMapping(value = "/listar", method = RequestMethod.GET)
 	public String listar(@RequestParam(name = "page", defaultValue = "0") int page, Model model) {
@@ -74,18 +78,16 @@ public class ClienteController {
 
 		if (!foto.isEmpty()) {
 			try {
-				Path rutaUploadsRelativa = Paths.get("src//main//resources//static//uploads");
-				String rutaUploadsAbsoluta = rutaUploadsRelativa.toFile().getAbsolutePath();
-
 				byte[] bytesFoto = foto.getBytes();
 
-				Path rutaFoto = Paths.get(rutaUploadsAbsoluta + "//" + foto.getOriginalFilename());
+				Path rutaFoto = Paths.get(rutaFotosCliente + "//" + foto.getOriginalFilename());
 				Files.write(rutaFoto, bytesFoto);
 
 				flash.addFlashAttribute("info", "Foto '" + foto.getOriginalFilename() + "' subida con éxito");
 
 				cliente.setFoto(foto.getOriginalFilename());
 			} catch (IOException ioe) {
+				flash.addFlashAttribute("error", "Foto '" + foto.getOriginalFilename() + "' no pudo ser subida");
 				ioe.printStackTrace();
 			}
 		}
