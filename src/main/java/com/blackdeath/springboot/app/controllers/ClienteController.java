@@ -1,11 +1,13 @@
 package com.blackdeath.springboot.app.controllers;
 
+import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Map;
+import java.util.UUID;
 
 import javax.validation.Valid;
 
@@ -86,17 +88,32 @@ public class ClienteController {
 		}
 
 		if (!foto.isEmpty()) {
+			if (cliente.getId() != null && cliente.getFoto() != null && !cliente.getFoto().isEmpty()
+					&& cliente.getFoto().length() > 0) {
+				Path rutaAbsolutaFotoExistente = Paths.get(rutaFotosCliente).resolve(cliente.getFoto())
+						.toAbsolutePath();
+				File file = rutaAbsolutaFotoExistente.toFile();
+
+				if (file.exists() && file.canRead()) {
+					if (file.delete()) {
+						flash.addFlashAttribute("info", "Foto '" + cliente.getFoto() + "' eliminada con éxito");
+					}
+				}
+			}
+
+			String nombreUnicoFoto = UUID.randomUUID().toString() + "_" + foto.getOriginalFilename();
 			try {
+				Path rutaAbsolutaFotoNueva = Paths.get(rutaFotosCliente).resolve(nombreUnicoFoto).toAbsolutePath();
 				byte[] bytesFoto = foto.getBytes();
+				Files.write(rutaAbsolutaFotoNueva, bytesFoto);
 
-				Path rutaFoto = Paths.get(rutaFotosCliente + "//" + foto.getOriginalFilename());
-				Files.write(rutaFoto, bytesFoto);
+				log.info("rutaFoto: " + rutaAbsolutaFotoNueva);
 
-				flash.addFlashAttribute("info", "Foto '" + foto.getOriginalFilename() + "' subida con éxito");
+				flash.addFlashAttribute("info", "Foto '" + nombreUnicoFoto + "' subida con éxito");
 
-				cliente.setFoto(foto.getOriginalFilename());
+				cliente.setFoto(nombreUnicoFoto);
 			} catch (IOException ioe) {
-				flash.addFlashAttribute("error", "Foto '" + foto.getOriginalFilename() + "' no pudo ser subida");
+				flash.addFlashAttribute("error", "Foto '" + nombreUnicoFoto + "' no pudo ser subida");
 				ioe.printStackTrace();
 			}
 		}
@@ -137,8 +154,20 @@ public class ClienteController {
 	@RequestMapping(value = "/eliminar/{id}")
 	public String eliminar(@PathVariable(value = "id") Long id, RedirectAttributes flash) {
 		if (id > 0) {
+			Cliente cliente = clienteService.findOne(id);
+
 			clienteService.delete(id);
 			flash.addFlashAttribute("success", "Cliente eliminado con éxito");
+
+			Path rutaAbsolutaFoto = Paths.get(rutaFotosCliente).resolve(cliente.getFoto()).toAbsolutePath();
+			File file = rutaAbsolutaFoto.toFile();
+
+			if (file.exists() && file.canRead()) {
+				if (file.delete()) {
+					flash.addFlashAttribute("info", "Foto '" + cliente.getFoto() + "' eliminada con éxito");
+				}
+			}
+
 		}
 
 		return "redirect:/listar";
