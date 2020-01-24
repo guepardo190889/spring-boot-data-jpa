@@ -1,6 +1,7 @@
 package com.blackdeath.springboot.app.controllers;
 
 import java.io.IOException;
+import java.net.MalformedURLException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -8,11 +9,17 @@ import java.util.Map;
 
 import javax.validation.Valid;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.io.Resource;
+import org.springframework.core.io.UrlResource;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
@@ -43,6 +50,8 @@ public class ClienteController {
 
 	@Value("${paths.clientes.fotos}")
 	private String rutaFotosCliente;
+
+	private static final Logger log = LoggerFactory.getLogger(ClienteController.class);
 
 	@RequestMapping(value = "/listar", method = RequestMethod.GET)
 	public String listar(@RequestParam(name = "page", defaultValue = "0") int page, Model model) {
@@ -147,6 +156,29 @@ public class ClienteController {
 		model.put("titulo", "Detalle del cliente: " + cliente.getNombreConApellido());
 
 		return "ver";
+	}
+
+	@GetMapping(value = "/uploads/{filename:.+}")
+	public ResponseEntity<Resource> verFoto(@PathVariable String filename) {
+		Path rutaAbsolutaFoto = Path.of(rutaFotosCliente).resolve(filename).toAbsolutePath();
+
+		log.info("rutaAbsolutaFoto: " + rutaAbsolutaFoto);
+
+		Resource recurso = null;
+
+		try {
+			recurso = new UrlResource(rutaAbsolutaFoto.toUri());
+
+			if (!recurso.exists() || !recurso.isReadable()) {
+				throw new RuntimeException("No se pudo cargar la imagen: " + rutaAbsolutaFoto);
+			}
+		} catch (MalformedURLException mue) {
+			mue.printStackTrace();
+		}
+
+		return ResponseEntity.ok()
+				.header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + recurso.getFilename() + "\"")
+				.body(recurso);
 	}
 
 }
