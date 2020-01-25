@@ -5,18 +5,18 @@ import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
-import com.blackdeath.springboot.app.models.service.IUploadFileService;
+import com.blackdeath.springboot.app.models.service.IUploadImageService;
 
 @SpringBootApplication
 public class SpringBootDataJpaApplication implements CommandLineRunner {
 
 	@Autowired
-	private IUploadFileService uploadFileService;
+	private IUploadImageService uploadImageService;
 
 	@Override
 	public void run(String... args) throws Exception {
-		uploadFileService.borrarTodo();
-		uploadFileService.init();
+		uploadImageService.deleteUploadsDirectory();
+		uploadImageService.createUploadsDirectory();
 	}
 
 	public static void main(String[] args) {

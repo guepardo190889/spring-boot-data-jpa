@@ -28,7 +28,7 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import com.blackdeath.springboot.app.models.entity.Cliente;
 import com.blackdeath.springboot.app.models.service.IClienteService;
-import com.blackdeath.springboot.app.models.service.IUploadFileService;
+import com.blackdeath.springboot.app.models.service.IUploadImageService;
 import com.blackdeath.springboot.app.util.PageRender;
 
 /**
@@ -43,7 +43,7 @@ public class ClienteController {
 	private IClienteService clienteService;
 
 	@Autowired
-	private IUploadFileService uploadFileService;
+	private IUploadImageService uploadImageService;
 
 	@RequestMapping(value = "/listar", method = RequestMethod.GET)
 	public String listar(@RequestParam(name = "page", defaultValue = "0") int page, Model model) {
@@ -80,7 +80,7 @@ public class ClienteController {
 		if (!foto.isEmpty()) {
 			if (cliente.getId() != null && cliente.getFoto() != null && !cliente.getFoto().isEmpty()
 					&& cliente.getFoto().length() > 0) {
-				if (uploadFileService.eliminar(cliente.getFoto())) {
+				if (uploadImageService.delete(cliente.getFoto())) {
 					flash.addFlashAttribute("info", "Foto '" + cliente.getFoto() + "' eliminada con éxito");
 				}
 			}
@@ -88,7 +88,7 @@ public class ClienteController {
 			String nombreUnicoFoto = null;
 
 			try {
-				nombreUnicoFoto = uploadFileService.copiar(foto);
+				nombreUnicoFoto = uploadImageService.saveWithUniqueName(foto);
 
 				flash.addFlashAttribute("info", "Foto '" + nombreUnicoFoto + "' subida con éxito");
 
@@ -140,7 +140,7 @@ public class ClienteController {
 			clienteService.delete(id);
 			flash.addFlashAttribute("success", "Cliente eliminado con éxito");
 
-			if (uploadFileService.eliminar(cliente.getFoto())) {
+			if (uploadImageService.delete(cliente.getFoto())) {
 				flash.addFlashAttribute("info", "Foto '" + cliente.getFoto() + "' eliminada con éxito");
 			}
 
@@ -168,7 +168,7 @@ public class ClienteController {
 		Resource recurso = null;
 
 		try {
-			recurso = uploadFileService.cargar(filename);
+			recurso = uploadImageService.getAsResource(filename);
 		} catch (MalformedURLException mue) {
 			mue.printStackTrace();
 		}

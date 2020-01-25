@@ -23,27 +23,22 @@ import org.springframework.web.multipart.MultipartFile;
 import com.blackdeath.springboot.app.controllers.ClienteController;
 
 /**
- * Lógica de negocio para manejo de carga, copia y eliminación de fotos
+ * Implementación para el manejo de fotos en el FileSystem del sistema operativo
  * 
  * @author blackdeath
  *
  */
 @Service
-public class UploadFileServiceImpl implements IUploadFileService {
-
-	@Value("${paths.clientes.fotos}")
-	private String rutaFotosCliente;
+public class UploadImageServiceImpl implements IUploadImageService {
 
 	private static final Logger log = LoggerFactory.getLogger(ClienteController.class);
 
-	/**
-	 * Busca un archivo por su nombre y lo devuelve como Resource
-	 * 
-	 */
+	@Value("${paths.clientes.fotos}")
+	private String rootPath;
+
 	@Override
-	public Resource cargar(String filename) throws MalformedURLException {
-		Path rutaAbsolutaFoto = getRuta(filename);
-		log.info("rutaAbsolutaFoto: " + rutaAbsolutaFoto);
+	public Resource getAsResource(String filename) throws MalformedURLException {
+		Path rutaAbsolutaFoto = getRutaAbsoluta(filename);
 
 		Resource recurso = null;
 
@@ -57,10 +52,10 @@ public class UploadFileServiceImpl implements IUploadFileService {
 	}
 
 	@Override
-	public String copiar(MultipartFile file) throws IOException {
+	public String saveWithUniqueName(MultipartFile file) throws IOException {
 		String nombreUnicoFoto = UUID.randomUUID().toString() + "_" + file.getOriginalFilename();
 
-		Path rutaAbsolutaFotoNueva = getRuta(nombreUnicoFoto);
+		Path rutaAbsolutaFotoNueva = getRutaAbsoluta(nombreUnicoFoto);
 
 		Files.copy(file.getInputStream(), rutaAbsolutaFotoNueva);
 
@@ -70,8 +65,8 @@ public class UploadFileServiceImpl implements IUploadFileService {
 	}
 
 	@Override
-	public boolean eliminar(String filename) {
-		Path rutaAbsolutaFoto = getRuta(filename);
+	public boolean delete(String filename) {
+		Path rutaAbsolutaFoto = getRutaAbsoluta(filename);
 
 		File file = rutaAbsolutaFoto.toFile();
 
@@ -81,18 +76,18 @@ public class UploadFileServiceImpl implements IUploadFileService {
 		return false;
 	}
 
-	public Path getRuta(String filename) {
-		return Paths.get(rutaFotosCliente).resolve(filename).toAbsolutePath();
+	@Override
+	public void deleteUploadsDirectory() throws IOException {
+		FileSystemUtils.deleteRecursively(Paths.get(rootPath));
 	}
 
 	@Override
-	public void borrarTodo() throws IOException {
-		FileSystemUtils.deleteRecursively(Paths.get(rutaFotosCliente));
+	public void createUploadsDirectory() throws IOException {
+		Files.createDirectories(Paths.get(rootPath));
 	}
 
-	@Override
-	public void init() throws IOException {
-		Files.createDirectories(Paths.get(rutaFotosCliente));
+	public Path getRutaAbsoluta(String filename) {
+		return Paths.get(rootPath).resolve(filename).toAbsolutePath();
 	}
 
 }
