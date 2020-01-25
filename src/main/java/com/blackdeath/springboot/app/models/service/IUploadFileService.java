@@ -21,4 +21,8 @@ public interface IUploadFileService {
 
 	public boolean eliminar(String filename);
 
+	public void borrarTodo() throws IOException;
+
+	public void init() throws IOException;
+
 }

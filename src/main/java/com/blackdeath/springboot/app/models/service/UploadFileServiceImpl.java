@@ -17,6 +17,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.UrlResource;
 import org.springframework.stereotype.Service;
+import org.springframework.util.FileSystemUtils;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.blackdeath.springboot.app.controllers.ClienteController;
@@ -82,6 +83,16 @@ public class UploadFileServiceImpl implements IUploadFileService {
 
 	public Path getRuta(String filename) {
 		return Paths.get(rutaFotosCliente).resolve(filename).toAbsolutePath();
+	}
+
+	@Override
+	public void borrarTodo() throws IOException {
+		FileSystemUtils.deleteRecursively(Paths.get(rutaFotosCliente));
+	}
+
+	@Override
+	public void init() throws IOException {
+		Files.createDirectories(Paths.get(rutaFotosCliente));
 	}
 
 }
